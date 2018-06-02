@@ -6,7 +6,8 @@ int scale = 3; // 3 (±3g) for ADXL337, 200 (±200g) for ADXL377
 boolean micro_is_5V = true; // Set to true if using a 5V microcontroller such as the Arduino Uno, false if using a 3.3V microcontroller, this affects the interpretation of the sensor data
 char* filename = "first.txt";
 unsigned start_time_seconds=millis()/1000;
-int counter=0;
+int length=600; // 10 minutes
+int 
 File dataFile;
 
 
@@ -44,20 +45,16 @@ void setup()
    pinMode(7, OUTPUT);
    
         //Flash the an LED 5 times before beginning and then keep the LED on during measurement
-     for (int i =0;i<5;i++)
-     {
-      digitalWrite(7, LOW); 
-      delay(500); 
-      digitalWrite(7, HIGH);
-      delay(500); 
-     }
+     flash(10);
 }
 
 void loop()
 {
 
-    if (millis()/1000-start_time_seconds<60) {
-         
+    if (millis()/1000-start_time_seconds<length) {
+      if (millis()/1000 % interval) == 0 {
+          flash(gap);
+      }
           //***********3 g accelerometer   
           
           // Get raw accelerometer data for each axis
@@ -89,8 +86,8 @@ void loop()
 
           // Print out scaled X,Y,Z accelerometer readings
 
-          printf("%f,%f,%f,%f,%f,%f\n", scaledX,scaledY,scaledZ,scaledX2,scaledY2,scaledZ2);
-       	  
+          fprintf(fp, "%f,%f,%f,%f,%f,%f\n", scaledX,scaledY,scaledZ,scaledX2,scaledY2,scaledZ2);
+ 	  
           delay(10); // Minimum delay of 2 milliseconds between sensor reads (500 Hz)
 
        } else {
@@ -99,6 +96,16 @@ void loop()
           while (1) ;
         }
     
+}
+
+void flash(int n){
+  for (int i =0;i<n;i++)
+     {
+      digitalWrite(7, LOW); 
+      delay(500); 
+      digitalWrite(7, HIGH);
+      delay(500); 
+     }
 }
 
 // Same functionality as Arduino's standard map function, except using floats
