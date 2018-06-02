@@ -53,88 +53,52 @@ void setup()
      }
 }
 
-// Read, scale, and print accelerometer data
 void loop()
 {
 
-  
-  
-      if (millis()/1000-start_time_seconds<60) {
+    if (millis()/1000-start_time_seconds<60) {
+         
+          //***********3 g accelerometer   
+          
+          // Get raw accelerometer data for each axis
+          int rawX = analogRead(A0);
+          int rawY = analogRead(A1);
+          int rawZ = analogRead(A2);
+          
+          // Scale accelerometer ADC readings into common units
+          float scaledX, scaledY, scaledZ; // Scaled values for each axis
 
-      counter++;
-//***********3 g accelerometer   
-  
-  // Get raw accelerometer data for each axis
-  int rawX = analogRead(A0);
-  int rawY = analogRead(A1);
-  int rawZ = analogRead(A2);
-  
-  // Scale accelerometer ADC readings into common units
-  // Scale map depends on if using a 5V or 3.3V microcontroller
-  float scaledX, scaledY, scaledZ; // Scaled values for each axis
-  if (micro_is_5V) // Microcontroller runs off 5V
-  {
-    scaledX = mapf(rawX, 0, 675, -3, 3); // 3.3/5 * 1023 =~ 675
-    scaledY = mapf(rawY, 0, 675, -3, 3);
-    scaledZ = mapf(rawZ, 0, 675, -3, 3);
-  }
-  else // Microcontroller runs off 3.3V
-  {
-    scaledX = mapf(rawX, 0, 1023, -3, 3);
-    scaledY = mapf(rawY, 0, 1023, -3, 3);
-    scaledZ = mapf(rawZ, 0, 1023, -3, 3);
-  }
-  
- //************200 g accelerometer
+          scaledX = mapf(rawX, 0, 675, -3, 3); // 3.3/5 * 1023 =~ 675
+          scaledY = mapf(rawY, 0, 675, -3, 3);
+          scaledZ = mapf(rawZ, 0, 675, -3, 3);
 
-  // Get raw accelerometer data for each axis
-  int rawX2 = analogRead(A3);
-  int rawY2 = analogRead(A4);
-  int rawZ2 = analogRead(A5);
-  
-  // Scale accelerometer ADC readings into common units
-  // Scale map depends on if using a 5V or 3.3V microcontroller
-  float scaledX2, scaledY2, scaledZ2; // Scaled values for each axis
-  if (micro_is_5V) // Microcontroller runs off 5V
-  {
-    scaledX2 = mapf(rawX, 0, 675, -200, 200); // 3.3/5 * 1023 =~ 675
-    scaledY2 = mapf(rawY, 0, 675, -200, 200);
-    scaledZ2 = mapf(rawZ, 0, 675, -200, 200);
-  }
-  else // Microcontroller runs off 3.3V
-  {
-    scaledX2 = mapf(rawX, 0, 1023, -200, 200);
-    scaledY2 = mapf(rawY, 0, 1023, -200, 200);
-    scaledZ2 = mapf(rawZ, 0, 1023, -200, 200);
-  }
- 
- 
-  /*
-  // Print out raw X,Y,Z accelerometer readings
-  Serial.print("X: "); Serial.println(rawX);
-  Serial.print("Y: "); Serial.println(rawY);
-  Serial.print("Z: "); Serial.println(rawZ);
-  Serial.println();
-  */
-  
-  // Print out scaled X,Y,Z accelerometer readings
-  //Serial.print(scaledX);Serial.print(",");Serial.print(scaledY);Serial.print(",");Serial.println(scaledZ);
-  dataFile.print(scaledX);dataFile.print(",");dataFile.print(scaledY);dataFile.print(",");dataFile.print(scaledZ);dataFile.print(",");dataFile.print(scaledX2);dataFile.print(",");dataFile.print(scaledY2);dataFile.print(",");dataFile.println(scaledZ2);
+         //************200 g accelerometer
 
-//  Serial.print("X: "); Serial.print(scaledX); Serial.println(" g");
-//  Serial.print("Y: "); Serial.print(scaledY); Serial.println(" g");
-//  Serial.print("Z: "); Serial.print(scaledZ); Serial.println(" g");
-//  Serial.println();
-  
-  delay(10); // Minimum delay of 2 milliseconds between sensor reads (500 Hz)
-   } else {
-      Serial.print("Closing data file and terminating");
-      digitalWrite(7, LOW); 
-      dataFile.close();
-      while (1) ;
-    }
-  
-  
+          // Get raw accelerometer data for each axis
+          int rawX2 = analogRead(A3);
+          int rawY2 = analogRead(A4);
+          int rawZ2 = analogRead(A5);
+          
+          // Scale accelerometer ADC readings into common units
+          // Scale map depends on if using a 5V or 3.3V microcontroller
+          float scaledX2, scaledY2, scaledZ2; // Scaled values for each axis
+          scaledX2 = mapf(rawX, 0, 675, -200, 200); // 3.3/5 * 1023 =~ 675
+          scaledY2 = mapf(rawY, 0, 675, -200, 200);
+          scaledZ2 = mapf(rawZ, 0, 675, -200, 200);
+         
+
+          // Print out scaled X,Y,Z accelerometer readings
+
+          printf("%f,%f,%f,%f,%f,%f\n", scaledX,scaledY,scaledZ,scaledX2,scaledY2,scaledZ2);
+       	  
+          delay(10); // Minimum delay of 2 milliseconds between sensor reads (500 Hz)
+
+       } else {
+          digitalWrite(7, LOW); 
+          dataFile.close();
+          while (1) ;
+        }
+    
 }
 
 // Same functionality as Arduino's standard map function, except using floats
