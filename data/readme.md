@@ -1,3 +1,12 @@
+### Data Format
+* x acceleration (3g accelerometer)
+* y acceleration (3g accelerometer)
+* z acceleration (3g accelerometer)
+* x acceleration (200g accelerometer)
+* y acceleration (200g accelerometer)
+* z acceleration (200g accelerometer)
+* Label
+
 ### Runs at following:
 * 1 mph walking
 * 2 mph walking
