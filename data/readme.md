@@ -7,7 +7,7 @@
 * z acceleration (200g accelerometer)
 * Label
 
-### Runs at following:
+### Runs at following for Deepak and Tim:
 * 1 mph walking
 * 2 mph walking
 * 3 mph walking
@@ -16,6 +16,13 @@
 * 5 mph running
 * 6 mph running
 * 7 mph running
+
+### Runs at following for Olivia:
+* 1 mph walking
+* 2 mph walking
+* 3 mph walking
+* 3.5 mph running
+* 4 mph running
 
 
 ### Labels
