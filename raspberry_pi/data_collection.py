@@ -22,17 +22,17 @@ SPI_DEVICE = 0
 mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
 while True:
-	print "[name,activity_code,speed] or q"
-	value=raw_input()
+	print("[name,activity_code,speed] or q")
+	value=input()
 	if str(value)=="q":
 		break
 	else:
 		name,activity_code,speed=value.split(',')
 		if activity_code not in ['1','2','3']:
-			print "activity code not recognized"
+			print("activity code not recognized")
 			break
-		print"About to record %s %s at %.1f mph, okay? Y to continue" % (name,activities[int(activity_code)-1],float(speed))
-		b=raw_input()
+		print("About to record %s %s at %.1f mph, okay? Y to continue" % (name,activities[int(activity_code)-1],float(speed)))
+		b=input()
 		if b!="Y":
 			break
 		data_to_dump=[]
@@ -50,7 +50,7 @@ while True:
 		    data_to_dump.append(values)
 		done=time.time()
 		elapsed=done-start
-		print "That took %.4f seconds which is %.4f Hz" %(elapsed,1000.0/float(elapsed))
+		print("That took %.4f seconds which is %.4f Hz" %(elapsed,1000.0/float(elapsed)))
 		f=open('datafile.csv','a')
 		for data_row in data_to_dump:
 			f.write(",".join([name,str(activity_code),str(speed)]+data_row)+"\n")
