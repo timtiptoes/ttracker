@@ -8,7 +8,10 @@ import time
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_MCP3008
 import time
+import numpy as np
+from scipy import stats
 activities=['doing nothing','walking','running']
+from tabulate import tabulate
 # Software SPI configuration:
 #CLK  = 18
 #MISO = 23
@@ -37,7 +40,7 @@ while True:
 			break
 		data_to_dump=[]
 		start = time.time()
-		for i in range(6000):
+		for i in range(1000):
 		    # Read all the ADC channel values in a list.
 		    values = [0]*6
 		    for i in range(6):
@@ -50,8 +53,15 @@ while True:
 		    data_to_dump.append(values)
 		done=time.time()
 		elapsed=done-start
-		print("That took %.4f seconds which is %.4f Hz" %(elapsed,1000.0/float(elapsed)))
+		print("That took %.4f seconds which is %.4f Hz" %(elapsed,6000.0/float(elapsed)))
 		f=open('datafile.csv','a')
 		for data_row in data_to_dump:
 			f.write(",".join([name,str(activity_code),str(speed)]+data_row)+"\n")
 		f.close()
+		
+		b=np.array([np.array(xi) for xi in data_to_dump]).astype(np.float)
+		desc = stats.describe(b)
+
+		c=[[str(i),desc.mean[i],desc.variance[i],desc.minmax[0][i],desc.minmax[1][i]] for i in range(len(desc.mean))]
+		
+		print(tabulate(c, headers=['channel','mean','variance','min','max'], tablefmt='orgtbl'))
