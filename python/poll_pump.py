@@ -11,7 +11,7 @@ ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
-file1 = open('/media/ubuntu/Samsung_SSD/github/home_thermostat/temp_data.csv', 'a')
+file1 = open('/media/ubuntu/Samsung_SSD/github/ttracker/pump_data.csv', 'a')
 
 now = datetime.now()
 dt_string = now.strftime("%Y-%m-%d %H:%M:%S")
