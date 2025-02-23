@@ -20,5 +20,5 @@ with urlopen("http://192.168.68.175",context=ctx) as response:
     body = response.read()
 
 response= json.loads(body.decode())
-file1.write("{}\n".format(dt_string,response['pump_status']))
+file1.write("{},{}\n".format(dt_string,response['pump_status']))
 file1.close()
