@@ -2,6 +2,21 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <SPI.h>
+#include <Ethernet.h>
+
+byte mac[] = {
+  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
+};
+IPAddress ip(192, 168, 68, 175);
+
+// Initialize the Ethernet server library
+// with the IP address and port you want to use
+// (port 80 is default for HTTP):
+EthernetServer server(80);
+char v[15];
+
+String output_string; 
 
 typedef struct {
     float *data;
@@ -113,41 +128,21 @@ void free_list(List* list) {
     free(list);
 }
 
-char* convert_time(long long milliseconds) {
-    long long seconds = milliseconds / 1000;
-    int days = seconds / 86400;
-    seconds %= 86400;
-    int hours = seconds / 3600;
-    seconds %= 3600;
-    int minutes = seconds / 60;
-    seconds %= 60;
-    
-    char* formatted_time = (char*)malloc(50 * sizeof(char));
-    if (formatted_time != NULL) {
-        snprintf(formatted_time, 50, "%d days %02d:%02d:%02d", days, hours, minutes, (int)seconds);
-    }
-    return formatted_time;
+char* get_pump_status(){
+   List* data = create_list(2);
+   
+  for (int i = 0; i < 10; i++) {
+      //***********3 g accelerometer
+      int rawX = analogRead(A0);
+      float scaledX = mapf(rawX, 0, 675, -3, 3);  // 3.3/5 * 1023 =~ 675
+      append(data,scaledX);
+      delay(100);
+  }
+
+    float stdev=standard_deviation(data);
+    if (stdev>0.05){return "\"on\"";}
+    else {return "\"off\"";}
 }
-
-// Make sure these two variables are correct for your setup
-const int chipSelect = 4;
-
-int scale = 3;               // 3 (±3g) for ADXL337, 200 (±200g) for ADXL377
-boolean micro_is_5V = true;  // Set to true if using a 5V microcontroller such as the Arduino Uno, false if using a 3.3V microcontroller, this affects the interpretation of the sensor data
-char* filename = "hottub1.txt";
-unsigned start_time_seconds = millis() / 1000;
-int n = 10;
-
-unsigned long previousTime = 0;
-byte seconds ;
-byte minutes ;
-byte hours ;
- List* data = create_list(2);
-int pump;
-int previous_pump;
-unsigned long StartTime = millis();
-File datafile = SD.open(filename, FILE_WRITE);
-
 
 void setup() {
   
@@ -156,103 +151,68 @@ void setup() {
    while (!Serial) {
     ; // wait for serial port to connect.
   }
+  Serial.println("Serial port initialized");
 
-  //Serial.print("Initializing SD card...");
-  // make sure that the default chip select pin is set to
-  // output, even if you don't use it:
-  pinMode(SS, OUTPUT);
-  
-  // see if the card is present and can be initialized:
-  if (!SD.begin(chipSelect)) {
-    Serial.println("Card failed, or not present");
-    // don't do anything more:
-    while (1) ;
-  }
-
-  Serial.println("card initialized.");
-
-  // Open up the file we're going to log to!
-
- 
-
-  if (! datafile) {
-    Serial.println("error opening dataFile");
-    // Wait forever since we cant write data
-    while (1) ;
-  }
-  
-
-
+    // start the Ethernet connection and the server:
+  Ethernet.begin(mac, ip);
+  server.begin();
+  Serial.print("server is at ");
+  Serial.println(Ethernet.localIP());
 }
 
+
 void loop() {
+  // listen for incoming clients
+  EthernetClient client = server.available();
+  if (client) {
+    Serial.println("new client");
+    // an http request ends with a blank line
+    boolean currentLineIsBlank = true;
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        Serial.write(c);
+        // if you've gotten to the end of the line (received a newline
+        // character) and the line is blank, the http request has ended,
+        // so you can send a reply
+        if (c == '\n' && currentLineIsBlank) {
+          // send a standard http response header
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: text/html");
+          client.println("Connection: close");  // the connection will be closed after completion of the response
+          client.println("Refresh: 5");  // refresh the page automatically every 5 sec
+          client.println();
 
-    //***********3 g accelerometer
+          Serial.println("About to fetch pump status");
 
-    // Get raw accelerometer data for each axis
-    int rawX = analogRead(A0);
-    int rawY = analogRead(A1);
-    int rawZ = analogRead(A2);
+          char* pump_status = get_pump_status();
 
-    // Scale accelerometer ADC readings into common units
-    float scaledX, scaledY, scaledZ;  // Scaled values for each axis
-
-    scaledX = mapf(rawX, 0, 675, -3, 3);  // 3.3/5 * 1023 =~ 675
-    scaledY = mapf(rawY, 0, 675, -3, 3);
-    scaledZ = mapf(rawZ, 0, 675, -3, 3);
-
-    //************200 g accelerometer
-
-    // Get raw accelerometer data for each axis
-    int rawX2 = analogRead(A3);
-    int rawY2 = analogRead(A4);
-    int rawZ2 = analogRead(A5);
-
-    // Scale accelerometer ADC readings into common units
-    // Scale map depends on if using a 5V or 3.3V microcontroller
-    float scaledX2, scaledY2, scaledZ2;        // Scaled values for each axis
-    scaledX2 = mapf(rawX, 0, 675, -200, 200);  // 3.3/5 * 1023 =~ 675
-    scaledY2 = mapf(rawY, 0, 675, -200, 200);
-    scaledZ2 = mapf(rawZ, 0, 675, -200, 200);
-
-    append(data,scaledX);
-
-  
-
-    if (get_size(data)>n) {
-          remove_at(data, 0);
-    }
-
-      float stdev=standard_deviation(data);
-
-      if (stdev>0.05){
-        pump=1;
+          Serial.println(pump_status);
+          
+          output_string="";
+          output_string.concat("{\"pump_status\":");
+          output_string.concat(pump_status);
+          output_string.concat("}");
+          client.print(output_string);
+          //client.println("<br />");
+          //client.println("</html>");
+          break;
+        }
+        if (c == '\n') {
+          // you're starting a new line
+          currentLineIsBlank = true;
+        } else if (c != '\r') {
+          // you've gotten a character on the current line
+          currentLineIsBlank = false;
+        }
       }
-      else {pump=0;}
-
-
-    datafile.println("testing 1, 2, 3.");
-
-    if (previous_pump!=pump){
-    unsigned long CurrentTime = millis();
-    unsigned long ElapsedTime = CurrentTime - StartTime;
-    char* result = convert_time(ElapsedTime);
-        if (result != NULL) {
-        datafile.print(result);
-        Serial.print(result);
-        free(result);
     }
-      if (pump){
-        datafile.println(",pump turned on");
-        Serial.print(",pump turned on\n");
-      }
-      else {
-        datafile.println(",pump turned off");
-        Serial.print(",pump turned off\n");}
-      previous_pump=pump;  
-    }
-    delay(100);  // Minimum delay of 2 milliseconds between sensor reads (500 Hz)
-
+    // give the web browser time to receive the data
+    delay(1);
+    // close the connection:
+    client.stop();
+    Serial.println("client disconnected");
+  }
 }
 
 
