@@ -145,7 +145,8 @@ char* get_pump_status(){
 }
 
 void setup() {
-  
+
+    analogReference(EXTERNAL);
    // Initialize serial communication at 115200 baud
     Serial.begin(9600);
    while (!Serial) {
@@ -208,7 +209,7 @@ void loop() {
       }
     }
     // give the web browser time to receive the data
-    delay(1);
+    delay(2);
     // close the connection:
     client.stop();
     Serial.println("client disconnected");
