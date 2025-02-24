@@ -14,7 +14,6 @@ IPAddress ip(192, 168, 68, 175);
 // with the IP address and port you want to use
 // (port 80 is default for HTTP):
 EthernetServer server(80);
-char v[15];
 
 String output_string; 
 
@@ -148,19 +147,42 @@ char* get_pump_status(){
 
 void setup() {
 
-    analogReference(EXTERNAL);
+  Ethernet.init(10);  // Most Arduino shields
    // Initialize serial communication at 115200 baud
+
     Serial.begin(9600);
    while (!Serial) {
     ; // wait for serial port to connect.
   }
   Serial.println("Serial port initialized");
 
+
+   SPI.begin();
+
     // start the Ethernet connection and the server:
   Ethernet.begin(mac, ip);
+
+  if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+    Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+    while (true) {
+      delay(1); // do nothing, no point running without Ethernet hardware
+    }
+  }
+
+  if (Ethernet.linkStatus() == LinkOFF) {
+    Serial.println("Ethernet cable is not connected.");
+  }
+
+
+
   server.begin();
   Serial.print("server is at ");
   Serial.println(Ethernet.localIP());
+
+
+  // give the sensor and Ethernet shield time to set up:
+  delay(1000);
+
 }
 
 
@@ -180,10 +202,10 @@ void loop() {
         // so you can send a reply
         if (c == '\n' && currentLineIsBlank) {
           // send a standard http response header
-          client.println("HTTP/1.1 200 OK");
-          client.println("Content-Type: text/html");
+          client.println("HTTP/1.1 301 Moved Permanently OK");
+          client.println("Content-Type: application/json");
           client.println("Connection: close");  // the connection will be closed after completion of the response
-          client.println("Refresh: 5");  // refresh the page automatically every 5 sec
+          client.println("Refresh: 30");  // refresh the page automatically every 5 sec
           client.println();
 
           Serial.println("About to fetch pump status");
@@ -211,7 +233,7 @@ void loop() {
       }
     }
     // give the web browser time to receive the data
-    delay(2);
+    delay(1);
     // close the connection:
     client.stop();
     Serial.println("client disconnected");
