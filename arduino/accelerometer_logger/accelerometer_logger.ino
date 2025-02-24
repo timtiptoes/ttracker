@@ -121,7 +121,7 @@ void print_list(List* list) {
     Serial.print("\n");
 }
 
-// Function to free the list memory
+// Function to free the 9*8+list memory
 void free_list(List* list) {
     free(list->data);
     free(list);
