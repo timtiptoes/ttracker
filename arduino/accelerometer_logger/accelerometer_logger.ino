@@ -128,9 +128,7 @@ void free_list(List* list) {
 }
 
 char* get_pump_status(){
-  return "\"off\"";
-}  
-/*   List* data = create_list(2);
+   List* data = create_list(2);
    
   for (int i = 0; i < 10; i++) {
       //***********3 g accelerometer
@@ -139,11 +137,11 @@ char* get_pump_status(){
       append(data,scaledX);
       delay(100);
   }
-
+  print_list(data);
     float stdev=standard_deviation(data);
     if (stdev>0.05){return "\"on\"";}
     else {return "\"off\"";}
-}*/
+}
 
 void setup() {
 
