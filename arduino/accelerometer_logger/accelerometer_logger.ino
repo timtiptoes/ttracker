@@ -200,7 +200,7 @@ void loop() {
         // so you can send a reply
         if (c == '\n' && currentLineIsBlank) {
           // send a standard http response header
-          client.println("HTTP/1.1 301 Moved Permanently OK");
+          client.println("HTTP/1.1 200 OK");
           client.println("Content-Type: application/json");
           client.println("Connection: close");  // the connection will be closed after completion of the response
           client.println("Refresh: 30");  // refresh the page automatically every 5 sec
